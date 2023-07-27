@@ -50,7 +50,19 @@ public class AddActivity extends AppCompatActivity {
         simpan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getApplicationContext(), "Jumlah: " + jumlah.getText().toString() + "\nStatus: " + notifStatus, Toast.LENGTH_LONG).show();
+
+                if (notifStatus.equals("")) {
+                    Toast.makeText(getApplicationContext(), "Status harus diisi", Toast.LENGTH_LONG).show();
+                    status.requestFocus();
+                } else if (jumlah.getText().toString().equals("")) {
+                    Toast.makeText(getApplicationContext(), "Jumlah harus diisi", Toast.LENGTH_LONG).show();
+                    jumlah.requestFocus();
+                } else if (keterangan.getText().toString().equals("")) {
+                    Toast.makeText(getApplicationContext(), "Keterangan harus diisi", Toast.LENGTH_LONG).show();
+                    keterangan.requestFocus();
+                } else {
+                    simpanData();
+                }
             }
         });
 
@@ -68,5 +80,9 @@ public class AddActivity extends AppCompatActivity {
     public boolean onSupportNavigateUp() {
         finish();
         return true;
+    }
+
+    private void simpanData() {
+        Toast.makeText(getApplicationContext(), "Data keuangan berhasil disimpan", Toast.LENGTH_LONG).show();
     }
 }
