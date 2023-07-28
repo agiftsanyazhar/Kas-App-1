@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
         listKas.setAdapter(null);
 
         SQLiteDatabase db = sqliteHelper.getReadableDatabase();
-        cursor = db.rawQuery("SELECT * FROM transaksi", null);
+        cursor = db.rawQuery("SELECT *, strftime('%d/%m/%Y %H:%M:%S', tanggal) FROM transaksi ORDER BY id DESC", null);
         cursor.moveToFirst();
 
         for (int i = 0; i < cursor.getCount(); i++) {
@@ -103,7 +103,8 @@ public class MainActivity extends AppCompatActivity {
             map.put("status", cursor.getString(1));
             map.put("jumlah", cursor.getString(2));
             map.put("keterangan", cursor.getString(3));
-            map.put("tanggal", cursor.getString(4));
+//            map.put("tanggal", cursor.getString(4));
+            map.put("tanggal", cursor.getString(5));
 
             arusKas.add(map);
         }
