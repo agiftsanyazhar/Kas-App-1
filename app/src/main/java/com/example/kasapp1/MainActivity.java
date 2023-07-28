@@ -1,5 +1,8 @@
 package com.example.kasapp1;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -19,14 +22,18 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.kasapp1.databinding.ActivityMainBinding;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.lang.reflect.Array;
 import java.text.NumberFormat;
@@ -38,6 +45,8 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
 
     ListView listKas;
+
+    SwipeRefreshLayout swipe_refresh;
     ArrayList<HashMap<String, String>> arusKas;
 
     private AppBarConfiguration appBarConfiguration;
@@ -45,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
 
     SqliteHelper sqliteHelper;
     Cursor cursor;
+
+    String transaksi_id;
 
     TextView pemasukan, pengeluaran, total;
 
@@ -72,13 +83,21 @@ public class MainActivity extends AppCompatActivity {
         });
 
         listKas = findViewById(R.id.list_kas);
+        swipe_refresh = findViewById(R.id.swipe_refresh);
+
         pemasukan = findViewById(R.id.pemasukan);
         pengeluaran = findViewById(R.id.pengeluaran);
         total = findViewById(R.id.total);
-
         arusKas = new ArrayList<>();
 
         sqliteHelper = new SqliteHelper(this);
+
+        swipe_refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                kasAdapter();
+            }
+        });
     }
 
     @Override
@@ -114,6 +133,15 @@ public class MainActivity extends AppCompatActivity {
                 new int[]{R.id.id, R.id.text_status, R.id.jumlah, R.id.keterangan, R.id.tanggal});
 
         listKas.setAdapter(simpleAdapter);
+        listKas.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                transaksi_id = ((TextView) view.findViewById(R.id.id)).getText().toString();
+                Log.e("_transaksi_id", transaksi_id);
+
+                listMenu();
+            }
+        });
 
         kasTotal();
     }
@@ -141,6 +169,8 @@ public class MainActivity extends AppCompatActivity {
         double difference = masukSum - keluarSum;
         total.setText(rupiah.format(difference));
 
+        swipe_refresh.setRefreshing(false);
+
 //        cursor = db.rawQuery("SELECT SUM(jumlah) AS 'TOTAL'," +
 //                "(SELECT SUM(jumlah) AS 'MASUK' FROM transaksi WHERE status='Masuk')," +
 //                "(SELECT SUM(jumlah) AS 'KELUAR' FROM transaksi WHERE status='Keluar')", null);
@@ -149,6 +179,61 @@ public class MainActivity extends AppCompatActivity {
 //        pemasukan.setText(rupiah.format(cursor.getDouble(1)));
 //        pengeluaran.setText(rupiah.format(cursor.getDouble(2)));
 //        total.setText(rupiah.format(cursor.getDouble(1) - cursor.getDouble(2)));
+    }
+
+    private void listMenu() {
+        Dialog dialog = new Dialog(MainActivity.this);
+        dialog.setContentView(R.layout.list_menu);
+        dialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+
+        TextView text_edit = dialog.findViewById(R.id.text_edit);
+        TextView text_hapus = dialog.findViewById(R.id.text_hapus);
+
+        text_edit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        text_hapus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+
+                hapus();
+            }
+        });
+
+        dialog.show();
+    }
+
+    private void hapus() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Peringatan!");
+        builder.setMessage("Anda yakin ingin menghapus ini?");
+        builder.setPositiveButton(
+                "Ya", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+
+                        SQLiteDatabase db = sqliteHelper.getWritableDatabase();
+                        db.execSQL("DELETE FROM transaksi WHERE id='" + transaksi_id + "'");
+
+                        Toast.makeText(getApplicationContext(), "Data berhasil dihapus", Toast.LENGTH_LONG).show();
+
+                        kasAdapter();
+                    }
+                });
+        builder.setNegativeButton(
+                "Tidak", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+        builder.show();
     }
 
     @Override
