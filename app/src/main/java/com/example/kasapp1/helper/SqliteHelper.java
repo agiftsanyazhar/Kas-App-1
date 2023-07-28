@@ -18,7 +18,7 @@ public class SqliteHelper extends SQLiteOpenHelper {
         // TODO Auto-generated method stub
         db.execSQL(
                 "CREATE TABLE transaksi (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, status TEXT," +
-                        "jumlah LONG, keterangan TEXT, tanggal TIMESTAMP DEFAULT CURRENT_TIMESTAMP );"
+                        "jumlah LONG, keterangan TEXT, tanggal DATE DEFAULT CURRENT_DATE );"
         );
     }
 

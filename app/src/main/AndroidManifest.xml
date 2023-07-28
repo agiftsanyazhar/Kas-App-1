@@ -13,6 +13,9 @@
         android:theme="@style/Theme.KasApp1"
         tools:targetApi="31">
         <activity
+            android:name=".EditActivity"
+            android:exported="false" />
+        <activity
             android:name=".SplashScreen"
             android:exported="true"
             android:theme="@style/Theme.KasApp1">
@@ -26,11 +29,11 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.KasApp1"></activity>
+            android:theme="@style/Theme.KasApp1" />
         <activity
             android:name=".AddActivity"
             android:exported="true"
-            android:theme="@style/Theme.KasApp1"></activity>
+            android:theme="@style/Theme.KasApp1" />
     </application>
 
 </manifest>

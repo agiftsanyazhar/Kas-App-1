@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
     SqliteHelper sqliteHelper;
     Cursor cursor;
 
-    String transaksi_id;
+    public static String transaksi_id;
 
     TextView pemasukan, pengeluaran, total;
 
@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
         listKas.setAdapter(null);
 
         SQLiteDatabase db = sqliteHelper.getReadableDatabase();
-        cursor = db.rawQuery("SELECT *, strftime('%d/%m/%Y %H:%M:%S', tanggal) FROM transaksi ORDER BY id DESC", null);
+        cursor = db.rawQuery("SELECT *, strftime('%d/%m/%Y', tanggal) FROM transaksi ORDER BY id DESC", null);
         cursor.moveToFirst();
 
         for (int i = 0; i < cursor.getCount(); i++) {
@@ -137,7 +137,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 transaksi_id = ((TextView) view.findViewById(R.id.id)).getText().toString();
-                Log.e("_transaksi_id", transaksi_id);
 
                 listMenu();
             }
@@ -193,6 +192,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 dialog.dismiss();
+
+                startActivity(new Intent(MainActivity.this, EditActivity.class));
             }
         });
         text_hapus.setOnClickListener(new View.OnClickListener() {
