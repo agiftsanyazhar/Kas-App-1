@@ -26,10 +26,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 
 import java.lang.reflect.Array;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
@@ -42,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
 
     SqliteHelper sqliteHelper;
     Cursor cursor;
+
+    TextView pemasukan, pengeluaran, total;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,13 +72,25 @@ public class MainActivity extends AppCompatActivity {
         });
 
         listKas = findViewById(R.id.list_kas);
+        pemasukan = findViewById(R.id.pemasukan);
+        pengeluaran = findViewById(R.id.pengeluaran);
+        total = findViewById(R.id.total);
+
         arusKas = new ArrayList<>();
 
         sqliteHelper = new SqliteHelper(this);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
         kasAdapter();
     }
 
     private void kasAdapter() {
+        arusKas.clear();
+        listKas.setAdapter(null);
+
         SQLiteDatabase db = sqliteHelper.getReadableDatabase();
         cursor = db.rawQuery("SELECT * FROM transaksi", null);
         cursor.moveToFirst();
@@ -96,6 +113,41 @@ public class MainActivity extends AppCompatActivity {
                 new int[]{R.id.id, R.id.text_status, R.id.jumlah, R.id.keterangan, R.id.tanggal});
 
         listKas.setAdapter(simpleAdapter);
+
+        kasTotal();
+    }
+
+    private void kasTotal() {
+        NumberFormat rupiah = NumberFormat.getCurrencyInstance(Locale.GERMANY);
+
+        SQLiteDatabase db = sqliteHelper.getReadableDatabase();
+
+        cursor = db.rawQuery("SELECT SUM(jumlah) AS 'MASUK' FROM transaksi WHERE status='Masuk'", null);
+        cursor.moveToFirst();
+        double masukSum = cursor.getDouble(cursor.getColumnIndex("MASUK"));
+        pemasukan.setText(rupiah.format(masukSum));
+
+        cursor = db.rawQuery("SELECT SUM(jumlah) AS 'KELUAR' FROM transaksi WHERE status='Keluar'", null);
+        cursor.moveToFirst();
+        double keluarSum = cursor.getDouble(cursor.getColumnIndex("KELUAR"));
+        pengeluaran.setText(rupiah.format(keluarSum));
+
+        cursor = db.rawQuery("SELECT SUM(jumlah) AS 'TOTAL' FROM transaksi", null);
+        cursor.moveToFirst();
+        double totalSum = cursor.getDouble(cursor.getColumnIndex("TOTAL"));
+        total.setText(rupiah.format(totalSum));
+
+        double difference = masukSum - keluarSum;
+        total.setText(rupiah.format(difference));
+
+//        cursor = db.rawQuery("SELECT SUM(jumlah) AS 'TOTAL'," +
+//                "(SELECT SUM(jumlah) AS 'MASUK' FROM transaksi WHERE status='Masuk')," +
+//                "(SELECT SUM(jumlah) AS 'KELUAR' FROM transaksi WHERE status='Keluar')", null);
+//        cursor.moveToFirst();
+//
+//        pemasukan.setText(rupiah.format(cursor.getDouble(1)));
+//        pengeluaran.setText(rupiah.format(cursor.getDouble(2)));
+//        total.setText(rupiah.format(cursor.getDouble(1) - cursor.getDouble(2)));
     }
 
     @Override

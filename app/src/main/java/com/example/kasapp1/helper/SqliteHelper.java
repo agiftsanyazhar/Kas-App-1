@@ -5,7 +5,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class SqliteHelper extends SQLiteOpenHelper {
-
     private static final String DATABASE_NAME = "kas-app-1";
     private static final int DATABASE_VERSION = 1;
 
@@ -22,7 +21,6 @@ public class SqliteHelper extends SQLiteOpenHelper {
                         "jumlah LONG, keterangan TEXT, tanggal DATE DEFAULT CURRENT_DATE );"
         );
     }
-
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
