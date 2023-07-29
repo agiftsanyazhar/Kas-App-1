@@ -15,6 +15,7 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import com.example.kasapp1.helper.CurrentDate;
 import com.example.kasapp1.helper.SqliteHelper;
@@ -65,6 +66,17 @@ public class EditActivity extends AppCompatActivity {
                 break;
         }
 
+        radio_status.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int i) {
+                if (i == R.id.masuk) {
+                    notifStatus = "Masuk";
+                } else if (i == R.id.keluar) {
+                    notifStatus = "Keluar";
+                }
+            }
+        });
+
         jumlah.setText(cursor.getString(2));
         keterangan.setText(cursor.getString(3));
 
@@ -79,12 +91,33 @@ public class EditActivity extends AppCompatActivity {
                         NumberFormat numberFormat = new DecimalFormat("00");
 
                         tangal = year + "-" + numberFormat.format(month + 1) + "-" + numberFormat.format(dayOfMonth);
-                        Log.e("_tanggal", tangal);
 
                         edit_tanggal.setText(numberFormat.format(dayOfMonth) + "/" + numberFormat.format(month) + "/" + numberFormat.format(year));
                     }
                 }, CurrentDate.year, CurrentDate.month, CurrentDate.day);
+
                 datePickerDialog.show();
+            }
+        });
+
+        simpan.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (notifStatus.equals("") || jumlah.equals("") || keterangan.equals("")) {
+                    Toast.makeText(getApplicationContext(), "Isi data terlebih dahulu", Toast.LENGTH_LONG).show();
+                    radio_status.requestFocus();
+                } else if (notifStatus.equals("")) {
+                    Toast.makeText(getApplicationContext(), "Status harus diisi", Toast.LENGTH_LONG).show();
+                    radio_status.requestFocus();
+                } else if (jumlah.getText().toString().equals("")) {
+                    Toast.makeText(getApplicationContext(), "Jumlah harus diisi", Toast.LENGTH_LONG).show();
+                    jumlah.requestFocus();
+                } else if (keterangan.getText().toString().equals("")) {
+                    Toast.makeText(getApplicationContext(), "Keterangan harus diisi", Toast.LENGTH_LONG).show();
+                    keterangan.requestFocus();
+                } else {
+                    simpanEdit();
+                }
             }
         });
 
@@ -102,5 +135,18 @@ public class EditActivity extends AppCompatActivity {
     public boolean onSupportNavigateUp() {
         finish();
         return true;
+    }
+
+    private void simpanEdit() {
+        SQLiteDatabase database = sqliteHelper.getWritableDatabase();
+        database.execSQL("UPDATE transaksi SET status='" + notifStatus + "', " +
+                "jumlah=" + "'" + jumlah.getText().toString() + "', " +
+                "keterangan=" + "'" + keterangan.getText().toString() + "', " +
+                "tanggal='" + tangal + "' " +
+                "WHERE id='" + MainActivity.transaksi_id + "'");
+
+        Toast.makeText(getApplicationContext(), "Transaksi berhasil disimpan", Toast.LENGTH_LONG).show();
+
+        finish();
     }
 }

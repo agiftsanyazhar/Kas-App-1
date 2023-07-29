@@ -13,6 +13,9 @@
         android:theme="@style/Theme.KasApp1"
         tools:targetApi="31">
         <activity
+            android:name=".FilterActivity"
+            android:exported="false" />
+        <activity
             android:name=".EditActivity"
             android:exported="false" />
         <activity
@@ -32,8 +35,7 @@
             android:theme="@style/Theme.KasApp1" />
         <activity
             android:name=".AddActivity"
-            android:exported="true"
-            android:theme="@style/Theme.KasApp1" />
+            android:exported="false" />
     </application>
 
 </manifest>

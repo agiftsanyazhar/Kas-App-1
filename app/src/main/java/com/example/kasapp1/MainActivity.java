@@ -55,7 +55,10 @@ public class MainActivity extends AppCompatActivity {
     SqliteHelper sqliteHelper;
     Cursor cursor;
 
-    public static String transaksi_id;
+    public static String transaksi_id, tgl_awal, tgl_akhir;
+    public static boolean filter;
+    String queryKas, queryPemasukan, queryPengeluaran, queryTotal;
+    public static TextView textFilter;
 
     TextView pemasukan, pengeluaran, total;
 
@@ -88,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
         pemasukan = findViewById(R.id.pemasukan);
         pengeluaran = findViewById(R.id.pengeluaran);
         total = findViewById(R.id.total);
+        textFilter = findViewById(R.id.text_filter);
         arusKas = new ArrayList<>();
 
         sqliteHelper = new SqliteHelper(this);
@@ -95,6 +99,11 @@ public class MainActivity extends AppCompatActivity {
         swipe_refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                queryKas = "SELECT *, strftime('%d/%m/%Y', tanggal) FROM transaksi ORDER BY id DESC";
+                queryPemasukan = "SELECT SUM(jumlah) AS 'MASUK' FROM transaksi WHERE status='Masuk'";
+                queryPengeluaran = "SELECT SUM(jumlah) AS 'KELUAR' FROM transaksi WHERE status='Keluar'";
+                queryTotal = "SELECT SUM(jumlah) AS 'TOTAL' FROM transaksi";
+
                 kasAdapter();
             }
         });
@@ -103,6 +112,24 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
+
+        queryKas = "SELECT *, strftime('%d/%m/%Y', tanggal) FROM transaksi ORDER BY id DESC";
+        queryPemasukan = "SELECT SUM(jumlah) AS 'MASUK' FROM transaksi WHERE status='Masuk'";
+        queryPengeluaran = "SELECT SUM(jumlah) AS 'KELUAR' FROM transaksi WHERE status='Keluar'";
+        queryTotal = "SELECT SUM(jumlah) AS 'TOTAL' FROM transaksi";
+
+        if (filter) {
+            queryKas = "SELECT *, strftime('%d/%m/%Y', tanggal) FROM transaksi " +
+                    "WHERE (tanggal >= '" + tgl_awal + "') AND (tanggal <= '" + tgl_akhir + "') " +
+                    "ORDER BY id DESC";
+            queryPemasukan = "SELECT SUM(jumlah) AS 'MASUK' FROM transaksi WHERE status='Masuk' " +
+                    "AND (tanggal >= '" + tgl_awal + "') AND (tanggal <= '" + tgl_akhir + "')";
+            queryPengeluaran = "SELECT SUM(jumlah) AS 'KELUAR' FROM transaksi WHERE status='Keluar'" +
+                    " AND (tanggal >= '" + tgl_awal + "') AND (tanggal <= '" + tgl_akhir + "')";
+            queryTotal = "SELECT SUM(jumlah) AS 'TOTAL' FROM transaksi " +
+                    "WHERE (tanggal >= '" + tgl_awal + "') AND (tanggal <= '" + tgl_akhir + "')";
+        }
+
         kasAdapter();
     }
 
@@ -111,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
         listKas.setAdapter(null);
 
         SQLiteDatabase db = sqliteHelper.getReadableDatabase();
-        cursor = db.rawQuery("SELECT *, strftime('%d/%m/%Y', tanggal) FROM transaksi ORDER BY id DESC", null);
+        cursor = db.rawQuery(queryKas, null);
         cursor.moveToFirst();
 
         for (int i = 0; i < cursor.getCount(); i++) {
@@ -150,17 +177,17 @@ public class MainActivity extends AppCompatActivity {
 
         SQLiteDatabase db = sqliteHelper.getReadableDatabase();
 
-        cursor = db.rawQuery("SELECT SUM(jumlah) AS 'MASUK' FROM transaksi WHERE status='Masuk'", null);
+        cursor = db.rawQuery(queryPemasukan, null);
         cursor.moveToFirst();
         double masukSum = cursor.getDouble(cursor.getColumnIndex("MASUK"));
         pemasukan.setText(rupiah.format(masukSum));
 
-        cursor = db.rawQuery("SELECT SUM(jumlah) AS 'KELUAR' FROM transaksi WHERE status='Keluar'", null);
+        cursor = db.rawQuery(queryPengeluaran, null);
         cursor.moveToFirst();
         double keluarSum = cursor.getDouble(cursor.getColumnIndex("KELUAR"));
         pengeluaran.setText(rupiah.format(keluarSum));
 
-        cursor = db.rawQuery("SELECT SUM(jumlah) AS 'TOTAL' FROM transaksi", null);
+        cursor = db.rawQuery(queryTotal, null);
         cursor.moveToFirst();
         double totalSum = cursor.getDouble(cursor.getColumnIndex("TOTAL"));
         total.setText(rupiah.format(totalSum));
@@ -169,6 +196,11 @@ public class MainActivity extends AppCompatActivity {
         total.setText(rupiah.format(difference));
 
         swipe_refresh.setRefreshing(false);
+
+        if (!filter) {
+            textFilter.setVisibility(View.GONE);
+        }
+        filter = false;
 
 //        cursor = db.rawQuery("SELECT SUM(jumlah) AS 'TOTAL'," +
 //                "(SELECT SUM(jumlah) AS 'MASUK' FROM transaksi WHERE status='Masuk')," +
@@ -252,7 +284,9 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_filter) {
+            startActivity(new Intent(this, FilterActivity.class));
+
             return true;
         }
 

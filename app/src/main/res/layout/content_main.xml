@@ -84,6 +84,17 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
+            <TextView
+                android:id="@+id/text_filter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/total"
+                android:layout_marginTop="5dp"
+                android:gravity="center"
+                android:text="Filter"
+                android:textSize="10sp"
+                android:visibility="gone" />
+
         </RelativeLayout>
 
     </androidx.cardview.widget.CardView>
