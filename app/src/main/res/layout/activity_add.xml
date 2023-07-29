@@ -65,7 +65,7 @@
                         android:id="@+id/jumlah"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Rp."
+                        android:hint="Rp"
                         android:inputType="number" />
 
                     <EditText
